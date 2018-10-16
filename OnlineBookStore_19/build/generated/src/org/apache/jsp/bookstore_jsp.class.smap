@@ -1,0 +1,14 @@
+SMAP
+bookstore_jsp.java
+JSP
+*S JSP
+*F
++ 0 bookstore.jsp
+bookstore.jsp
+*L
+5,42:46
+47:88,3
+48,2:91
+51,36:94
+86,7:130
+*E

@@ -1,0 +1,58 @@
+CREATE OR REPLACE TRIGGER Book_trigger
+BEFORE INSERT OR UPDATE
+ON book
+FOR EACH ROW
+DECLARE
+BEGIN
+	:NEW.bookid := id_seq.nextval ;
+END;
+/
+
+
+CREATE OR REPLACE FUNCTION INSERT_BOOK (NAME IN VARCHAR2)
+RETURN VARCHAR2 IS
+
+BOOKID VARCHAR2(100) ;
+BEGIN
+
+insert 
+into book
+values (id_seq.nextval,'1234534590',NAME,'tt',tt',tt',tt',tt',tt',tt',tt',tt',tt',12);
+
+ bookid:=id.seq.currval;           
+
+RETURN bookid ; --return the message
+
+END ;
+
+/
+
+
+CREATE OR REPLACE PROCEDURE INSERT_BOOKbyCATEGORY (CID IN VARCHAR2,BID IN VARCHAR2) IS
+BEGIN
+INSERT INTO BOOKbyCATEGORY
+VALUES (CID,BID);
+END ;
+/
+
+CREATE OR REPLACE PROCEDURE INSERT_WRITES (AID IN VARCHAR2,BID IN VARCHAR2) IS
+BEGIN
+INSERT INTO WRITES
+VALUES (AID,BID);
+END ;
+/
+
+
+declare 
+
+message varchar (100);
+BEGIN
+MESSAGE := insert_book('bo') ;
+DBMS_OUTPUT.PUT_LINE(MESSAGE) ;
+
+END ;
+/
+
+
+
+

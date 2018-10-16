@@ -1,0 +1,134 @@
+CREATE OR REPLACE FUNCTION FindAuthorName ( book_id in varchar2)
+RETURN varchar2 IS
+auhtor_name varchar2(1000);
+BEGIN
+	--author_name := '';
+	FOR R IN (select a.name from AUTHOR a join writes w
+				on a.AUTHORID = w.AUTHORID WHERE w.BOOKID = book_id )
+	LOOP
+		begin
+			auhtor_name := auhtor_name||r.name||', ';
+			dbms_output.put_line(r.name);
+			dbms_output.put_line(auhtor_name);
+			
+		end;
+	END LOOP ;
+		return auhtor_name;
+END ;
+/
+
+declare
+
+begin
+dbms_output.put_line(findauthorname('43'));
+end;
+/
+
+CREATE OR REPLACE FUNCTION FindCategoryName ( book_id in varchar2)
+RETURN varchar2 IS
+cat_name varchar2(1000);
+BEGIN
+	FOR R IN (select c.CATEGORYNAME  from CATEGORY c join BOOKBYCATEGORY bbc
+				on c.CATEGORYID = bbc.CATEGORY WHERE BBC.BOOKID = book_id)
+	LOOP
+		begin
+			cat_name := cat_name||r.categoryname||', ';
+			dbms_output.put_line(r.categoryname);
+			dbms_output.put_line(cat_name);	
+		end;
+	END LOOP ;
+		return cat_name;
+	
+END ;
+/
+
+declare
+
+begin
+dbms_output.put_line(findcategoryname('43'));
+end;
+/
+
+
+CREATE OR REPLACE FUNCTION FindSubCategoryName ( book_id in varchar2)
+RETURN varchar2 IS
+subcat_name varchar2(1000);
+BEGIN
+	FOR R IN (select c.SUBCATEGORYNAME  from CATEGORY c join BOOKBYCATEGORY bbc
+				on c.CATEGORYID = bbc.CATEGORY WHERE BBC.BOOKID = book_id)
+	LOOP
+		begin
+			subcat_name := subcat_name||r.subcategoryname||', ';
+			dbms_output.put_line(r.subcategoryname);
+			dbms_output.put_line(subcat_name);	
+		end;
+	END LOOP ;
+		return subcat_name;
+	
+END ;
+/
+
+declare
+
+begin
+dbms_output.put_line(findsubcategoryname('43'));
+end;
+/
+
+
+
+
+CREATE OR REPLACE FUNCTION findPublicationName ( book_id in varchar2)
+RETURN varchar2 IS
+pub_name varchar2(1000);
+BEGIN
+	select name into pub_name
+	from publication
+	where publisherId =
+	(select publisherId 
+	from book
+	where bookId = book_id
+	);
+	return pub_name;
+	
+END ;
+/
+
+declare
+
+begin
+dbms_output.put_line(findPublicationname('43'));
+end;
+/
+
+create or replace view FullBookList
+as
+select BOOK.* ,
+nvl(findAuthorName(bookid),' ') as author, 
+nvl(findPublicationName(bookid),' ') as publication,
+nvl(findCategoryName(bookid),' ') as CATEGORY,
+nvl(findSubCategoryName(bookid),' ') as subCategory
+from book;
+
+
+
+
+select od.* 
+,(select BOOKTITLE from book b where b.BOOKID = od.bookid) as title
+,findAuthorName(OD.bookid)as author
+from ORDERDETAILS od
+where OD.ORDERID = '69';
+
+CREATE OR REPLACE TRIGGER Book_case_trigger
+BEFORE INSERT OR UPDATE
+ON book
+FOR EACH ROW
+DECLARE
+BEGIN
+	:NEW.booktitle := LOwer(:new.booktitle) ;
+        :new.language := lower(:new.language);
+        if :new.discount = null then
+           :new.discount := 0;
+        end if;
+END;
+/

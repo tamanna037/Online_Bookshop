@@ -1,0 +1,138 @@
+CREATE OR REPLACE TRIGGER thana_case_trigger
+BEFORE INSERT OR UPDATE
+ON thana
+FOR EACH ROW
+DECLARE
+BEGIN
+	:NEW.thananame := Lower(:new.thananame) ;
+    :new.district := lower(:new.district);
+END;
+/
+
+CREATE OR REPLACE TRIGGER user_date_trigger
+BEFORE INSERT OR UPDATE
+ON accountuser
+FOR EACH ROW
+DECLARE
+BEGIN
+	:NEW.updatedat := sysdate ;
+END;
+/
+
+CREATE OR REPLACE TRIGGER user_cdate_trigger
+BEFORE INSERT 
+ON accountuser
+FOR EACH ROW
+DECLARE
+BEGIN
+	:NEW.createdAt := sysdate ;
+	:NEW.USERTYPE := lower(:NEW.USERTYPE);
+END;
+/
+
+CREATE OR REPLACE TRIGGER pub_case_trigger
+BEFORE INSERT OR UPDATE
+ON publication
+FOR EACH ROW
+DECLARE
+BEGIN
+	:NEW.name := Lower(:new.name) ;
+END;
+/
+
+CREATE OR REPLACE TRIGGER cat_case_trigger
+BEFORE INSERT OR UPDATE
+ON category
+FOR EACH ROW
+DECLARE
+BEGIN
+	:NEW.categoryname := Lower(:new.categoryname) ;
+    :new.subcategoryname := lower(:new.subcategoryname);
+END;
+/
+
+CREATE OR REPLACE TRIGGER Book_case_trigger
+BEFORE INSERT OR UPDATE
+ON book
+FOR EACH ROW
+DECLARE
+BEGIN
+    :NEW.booktitle := LOwer(:new.booktitle) ;
+    :new.language := lower(:new.language);
+    if :new.discount is null then
+    :new.discount := 0;
+END;
+/
+
+CREATE OR REPLACE TRIGGER author_case_trigger
+BEFORE INSERT OR UPDATE
+ON author
+FOR EACH ROW
+DECLARE
+BEGIN
+	:NEW.name := LOwer(:new.name) ;
+       
+END;
+/
+
+CREATE OR REPLACE TRIGGER deliveryMan_trigger
+BEFORE INSERT OR UPDATE
+ON delivaryMan
+FOR EACH ROW
+DECLARE
+BEGIN
+	:NEW.hireDate := sysdate ;
+       
+END;
+/
+
+CREATE OR REPLACE TRIGGER customer_case_trigger
+BEFORE INSERT OR UPDATE
+ON customer
+FOR EACH ROW
+DECLARE
+BEGIN
+	:NEW.address := Lower(:new.address) ;
+        --:new.language := lower(:new.language);
+END;
+/
+
+
+
+
+
+CREATE OR REPLACE TRIGGER bookorder_case_trigger
+BEFORE INSERT OR UPDATE
+ON bookorder
+FOR EACH ROW
+DECLARE
+BEGIN
+	:NEW.delivarystatus := Lower(:new.delivarystatus) ;
+    :new.paymentstatus := lower(:new.paymentstatus);
+END;
+/
+
+CREATE OR REPLACE TRIGGER bookorder_date_trigger
+BEFORE INSERT OR UPDATE 
+ON bookorder
+FOR EACH ROW
+DECLARE
+BEGIN
+	:NEW.dateofbookorder := sysdate ;
+	:New.totalPrice := TRUNC(:new.totalPrice);
+END;
+/
+
+CREATE OR REPLACE TRIGGER bookorder_update_trigger
+BEFORE UPDATE 
+ON bookorder
+FOR EACH ROW
+DECLARE
+BEGIN
+	:NEW.dateofbookorder := sysdate ;
+	:New.totalPrice := TRUNC(:new.totalPrice);
+END;
+/
+
+
+

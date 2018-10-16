@@ -1,0 +1,161 @@
+CREATE OR REPLACE TRIGGER bookorder_case_trigger
+BEFORE INSERT OR UPDATE
+ON bookorder
+FOR EACH ROW
+DECLARE
+BEGIN
+	:NEW.delivarystatus := Lower(:new.delivarystatus) ;
+        --:new.paymentstatus := lower(:new.paymentstatus);
+END;
+/
+CREATE OR REPLACE TRIGGER bookorder_date_trigger
+BEFORE INSERT OR UPDATE
+ON bookorder
+FOR EACH ROW
+DECLARE
+BEGIN
+	:NEW.dateofbookorder := sysdate ;
+END;
+/
+
+
+CREATE SEQUENCE order_id_seq
+INCREMENT BY 1
+START WITH 0000000001
+MAXVALUE 9999999999
+NOCYCLE ;
+
+CREATE OR REPLACE PACKAGE bop IS
+      TYPE id_type IS TABLE OF VARCHAR2(10) INDEX BY BINARY_INTEGER;
+		TYPE q_type IS TABLE OF number INDEX BY BINARY_INTEGER;
+	
+      PROCEDURE insert_order (bookIdList in id_type,usrname in varchar2,quantity in q_type,delivaryCharge in number,
+					address in varchar2,thana in  varchar2, district in varchar2, order_id out varchar2);
+			END bop;
+  /
+CREATE OR REPLACE FUNCTION findThanaId ( thana IN VARCHAR2, zilla in varchar2)
+RETURN varchar2 IS
+user_count number;
+thana_id varchar2(25);
+username_not_available exception;
+BEGIN
+	user_count:=-1;
+	select thanaId into thana_id
+	from thana
+	where thananame = thana and district = zilla;
+
+	return thana_id;
+	EXCEPTION
+	when no_data_found THEN
+			raise_application_error(-20001,'no thana data found');
+	when too_many_rows then
+			raise_application_error(-20002,'many thana found');
+END ;
+/
+
+CREATE OR REPLACE PACKAGE BODY bop IS
+	PROCEDURE insert_order (bookIdList in id_type,usrname in varchar2,quantity in q_type,delivaryCharge in number,
+					address in varchar2,thana in  varchar2, district in varchar2,order_id out varchar2) IS
+		--order_id varchar2(10);
+		b_price number;
+		buyprice number;
+		total_price number;
+		thana_id varchar2(10);
+		addr varchar2(40);
+		thana_n varchar2(20);
+		zilla varchar2(15);
+		r rowid;
+		
+		  BEGIN
+				
+				total_price := 0;
+				addr := address;
+				thana_n := thana;
+				zilla := district;
+				
+				if address = 'currentAddress' then
+					begin
+						select c.address ,c.thanaId into addr, thana_id
+						from CUSTOMER c join thana t
+						on (c.thanaId = t.THANAID)
+						where c.USERNAME = usrname;		
+					end;
+				else
+					thana_id := findThanaId(thana_n,zilla);
+				end if;
+				
+				
+				insert into bookorder 
+				values (order_id_seq.nextval,usrname,total_price+delivaryCharge,
+				addr,thana_id,'pending','pending',sysdate,null,null)
+				returning rowid
+				into r;
+				--dbms_output.put_line(r);
+				if SQL%ROWCOUNT=0 then
+				   RAISE_APPLICATION_ERROR(-20003, 'No records inserted');
+				end if;
+				
+				order_id := order_id_seq.currval;
+				FOR i IN 1..bookIdList.count LOOP
+					BEGIN
+						select (price-(price*nvl(discount,0)/100)) into b_price
+						from book
+						where bookid = bookIdList(i);
+						buyprice := b_price*quantity(i);
+						total_price := total_price + buyprice;
+						dbms_output.put_line(buyprice);
+						insert into orderDetails values (order_id,
+						bookIdList(i),quantity(i),buyprice) ;
+						
+						if SQL%ROWCOUNT=0 then
+						   RAISE_APPLICATION_ERROR(-20003, 'No records inserted');
+						end if;
+					END;
+				END LOOP;
+				total_price := total_price+delivaryCharge;
+				update bookorder set totalPrice = total_price
+				where orderId = order_id;
+		  END insert_order;
+    END bop;
+    /
+
+ DECLARE
+      bookIdList bop.id_type;
+	  quantityList bop.q_type;
+	  id varchar2(20);
+    BEGIN
+      bookIdList(1) := '44';
+	  quantityList(1) := 13;
+	  bookIdList(2) := '38';
+	  quantityList(2) := 2;
+      bop.insert_order(bookIdList,'fariha',quantityList,50,'currentAddress','dhanmondi','dhaka',id);
+	  dbms_output.put_line(id);
+    END;
+    /
+	
+DECLARE
+       bookIdList bop.id_type;
+       quantityList bop.q_type;
+	   id varchar2(20);
+    BEGIN
+       bookIdList(1) := '44';
+       quantityList(1) := 13;
+       bookIdList(2) := '38';
+       quantityList(2) := 2;
+      bop.insert_order(bookIdList,'fariha',quantityList,50,'currentAddress','','',id);
+    END;
+	
+DECLARE
+       bookIdList bop.id_type;
+       quantityList bop.q_type;
+	   id varchar2(20);
+    BEGIN
+       bookIdList(1) := '50';
+       quantityList(1) := 5;
+       bookIdList(2) := '49';
+       quantityList(2) := 5;
+       bookIdList(3) := '43';
+       quantityList(3) := 5;
+      bop.insert_order(bookIdList,'fariha',quantityList,50,'currentAddress','','',id);
+    END;	
+	

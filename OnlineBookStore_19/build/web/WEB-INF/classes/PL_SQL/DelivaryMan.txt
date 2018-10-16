@@ -1,0 +1,45 @@
+CREATE OR REPLACE FUNCTION insertDelivaryMan (first in varchar2,
+					last in varchar2,emaill in varchar2,image in varchar2,
+					contact in varchar2,adrs in varchar2,thana in varchar2,
+					zilla in varchar2,admin in varchar2)
+RETURN varchar2 IS
+
+dm_id varchar2(10);
+thana_id varchar2(10);
+uType varchar2(1);
+not_admin exception;
+BEGIN
+	select userType into uType from accountuser
+	where username= admin;
+	if uType<>'a' or uType<>'A' then
+		raise not_admin;
+	end if;
+	insert into delivaryman(delivarymanid,firstname,lastname,email,imageurl,address,hiredate,enddate,assignedadmin)
+	values(dm_id_seq.nextval,first,last,emaill,image,adrs,sysdate,null,admin);
+	dm_id := dm_id_seq.currval;
+	insert into dmContactNo(contactno,delivarymanid) 
+	values (contact,dm_id);
+	thana_id := findThanaId(thana,zilla);
+	insert into DeliversIn(areaid,delivarymanid) 
+	values(thana_id,dm_id);
+	return dm_id;
+EXCEPTION
+	when no_data_found THEN
+			raise_application_error(-20004,'This action can be done by admin only');
+	when not_admin THEN
+			raise_application_error(-20004,'This action can be done by admin only');
+END ;
+/
+
+declare
+
+begin
+dbms_output.put_line(insertDelivaryMan('dm','dm',' ',' ','01534999999','gazipur','dhanmondi','dhaka','admin1'));
+end;
+/
+
+CREATE SEQUENCE dm_id_seq
+INCREMENT BY 1
+START WITH 0000000001
+MAXVALUE 9999999999
+NOCYCLE ;
